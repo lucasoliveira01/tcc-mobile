@@ -10,6 +10,7 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  CheckBox,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -191,6 +192,13 @@ const NewRequireScreen = () => {
               }>
               <Text style={styles.buttonText}>Escolher imagem</Text>
             </TouchableOpacity>
+            <View style={styles.checkboxContainer}>
+              <CheckBox />
+              <Text style={styles.checkboxLabel}>
+                Assumo que não vou enviar imagens pornográficas e/ou textos
+                pejorativos.
+              </Text>
+            </View>
             <TouchableOpacity style={styles.button} onPress={uploadImage}>
               <Text style={styles.buttonText}>Enviar Solicitação</Text>
             </TouchableOpacity>
@@ -212,7 +220,6 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
     width: '93%',
-    height: height + 50,
     alignSelf: 'center',
   },
   title: {
@@ -284,5 +291,15 @@ const styles = StyleSheet.create({
   fieldTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    marginRight: 20,
+    marginTop: 20,
+  },
+  checkboxLabel: {
+    marginTop: 2,
+    marginRight: 5,
   },
 });
