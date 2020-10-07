@@ -11,15 +11,21 @@ import {
   ScrollView,
   Dimensions,
   CheckBox,
+  Alert,
+  Platform,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import ImagePicker from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
+import * as Progress from 'react-native-progress';
 
 const NewRequireScreen = () => {
   const [type, setType] = useState('');
-  const [avatar, setAvatar] = useState();
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [transferred, setTransferred] = useState(0);
+
   const [description, setDescription] = useState();
   const screenHeight = Dimensions.get('window').height;
 
@@ -55,39 +61,62 @@ const NewRequireScreen = () => {
     setAvatar(data);
   }
 
-  async function uploadImage() {
-    const data = new FormData();
+  const selectImage = () => {
+    const options = {
+      maxWidth: 2000,
+      maxHeight: 2000,
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+    ImagePicker.showImagePicker(options, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
+        const source = {uri: response.uri};
+        console.log(source);
+        setImage(source);
+      }
+    });
+  };
 
-    data.append('avatar', {
-      fileName: avatar.fileName,
-      uri: avatar.uri,
-      type: avatar.type,
+  const uploadImage = async () => {
+    const {uri} = image;
+    const filename = uri.substring(uri.lastIndexOf('/') + 1);
+    const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+
+    setUploading(true);
+    setTransferred(0);
+
+    const task = storage().ref(filename).putFile(uploadUri);
+
+    // set progress state
+    task.on('state_changed', (snapshot) => {
+      setTransferred(
+        Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 10000,
+      );
     });
 
-    console.log(data);
+    try {
+      await task;
+    } catch (e) {
+      console.error(e);
+    }
 
-    // await Axios.post('http://localhost:3333/files', data);
-  }
+    setUploading(false);
 
-  async function uriToBlob(uri) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.onload = () => {
-        // return the blob
-        resolve(xhr.response);
-      };
+    Alert.alert(
+      'Photo uploaded!',
+      'Your photo has been uploaded to Firebase Cloud Storage!',
+    );
 
-      xhr.onerror = () => {
-        // something went wrong
-        reject(new Error('uriToBlob failed'));
-      };
-      // this helps us get a blob
-      xhr.responseType = 'blob';
-      xhr.open('GET', uri, true);
-
-      xhr.send(null);
-    });
-  }
+    setImage(null);
+  };
 
   return (
     <View style={styles.container}>
@@ -199,39 +228,34 @@ const NewRequireScreen = () => {
           </View>
           <View>
             <Text style={styles.fieldTitle}>Foto do Problema</Text>
-            {avatar ? (
-              <Image
-                source={{
-                  uri: avatar
-                    ? avatar.uri
-                    : 'https://mltmpgeox6sf.i.optimole.com/w:761/h:720/q:auto/https://redbanksmilesnj.com/wp-content/uploads/2015/11/man-avatar-placeholder.png',
-                }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View />
-            )}
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() =>
-                ImagePicker.showImagePicker(
-                  imagePickerOptions,
-                  imagePickerCallback,
-                )
-              }>
-              <Text style={styles.buttonText}>Escolher imagem</Text>
+            <TouchableOpacity style={styles.button} onPress={selectImage}>
+              <Text style={styles.buttonText}>Pick an image</Text>
             </TouchableOpacity>
-            <View style={styles.checkboxContainer}>
-              <CheckBox />
-              <Text style={styles.checkboxLabel}>
-                Assumo que não vou enviar imagens pornográficas e/ou textos
-                pejorativos.
-              </Text>
+            <View style={styles.imageContainer}>
+              {image !== null ? (
+                <Image source={{uri: image.uri}} style={styles.imageBox} />
+              ) : null}
+              {uploading ? (
+                <View style={styles.progressBarContainer}>
+                  <Progress.Bar progress={transferred} width={300} />
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.button} onPress={uploadImage}>
+                  <Text style={styles.buttonText}>Upload image</Text>
+                </TouchableOpacity>
+              )}
             </View>
-            <TouchableOpacity style={styles.button} onPress={uploadImage}>
-              <Text style={styles.buttonText}>Enviar Solicitação</Text>
-            </TouchableOpacity>
           </View>
+          <View style={styles.checkboxContainer}>
+            <CheckBox />
+            <Text style={styles.checkboxLabel}>
+              Assumo que não vou enviar imagens pornográficas e/ou textos
+              pejorativos.
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.button} onPress={uploadImage}>
+            <Text style={styles.buttonText}>Enviar Solicitação</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -331,5 +355,17 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     marginTop: 2,
     marginRight: 5,
+  },
+  imageContainer: {
+    marginTop: 30,
+    marginBottom: 50,
+    alignItems: 'center',
+  },
+  progressBarContainer: {
+    marginTop: 20,
+  },
+  imageBox: {
+    width: 300,
+    height: 300,
   },
 });
