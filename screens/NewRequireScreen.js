@@ -15,14 +15,20 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import ImagePicker from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
 
 const NewRequireScreen = () => {
   const [type, setType] = useState('');
   const [avatar, setAvatar] = useState();
+  const [description, setDescription] = useState();
   const screenHeight = Dimensions.get('window').height;
 
   const handleType = (selectedType) => {
     setType(selectedType);
+  };
+
+  const handleDescription = (text) => {
+    setDescription(text);
   };
 
   const imagePickerOptions = {
@@ -58,7 +64,29 @@ const NewRequireScreen = () => {
       type: avatar.type,
     });
 
+    console.log(data);
+
     // await Axios.post('http://localhost:3333/files', data);
+  }
+
+  async function uriToBlob(uri) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        // return the blob
+        resolve(xhr.response);
+      };
+
+      xhr.onerror = () => {
+        // something went wrong
+        reject(new Error('uriToBlob failed'));
+      };
+      // this helps us get a blob
+      xhr.responseType = 'blob';
+      xhr.open('GET', uri, true);
+
+      xhr.send(null);
+    });
   }
 
   return (
@@ -166,6 +194,7 @@ const NewRequireScreen = () => {
               autoCapitalize="none"
               multiline
               maxLength={50}
+              onBlur={(text) => handleDescription(text)}
             />
           </View>
           <View>
@@ -221,6 +250,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '93%',
     alignSelf: 'center',
+    height: height + 250,
   },
   title: {
     fontSize: 25,

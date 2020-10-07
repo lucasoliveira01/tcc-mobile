@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "386577127206",
+    "firebase_url": "https://fiscaliza-8b2f4.firebaseio.com",
+    "project_id": "fiscaliza-8b2f4",
+    "storage_bucket": "fiscaliza-8b2f4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:386577127206:android:e5dd982973a87b0d89d3e7",
+        "android_client_info": {
+          "package_name": "com.fiscaliza"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "386577127206-qj3dhq5fr9e2ib15hdjmabntp5veh3op.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEnq7hnvSCb4-OUpqVq_zcr50EjC6Mpi4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "386577127206-qj3dhq5fr9e2ib15hdjmabntp5veh3op.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
