@@ -19,6 +19,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import ImagePicker from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import * as Progress from 'react-native-progress';
+import RNFS from 'react-native-fs';
+import functions from '@react-native-firebase/functions';
 
 const NewRequireScreen = () => {
   const [type, setType] = useState('');
@@ -29,12 +31,17 @@ const NewRequireScreen = () => {
   const [description, setDescription] = useState();
   const screenHeight = Dimensions.get('window').height;
 
+  const reference = storage().ref('poste.jpg');
+
+  const axios = require('axios').default;
+
   const handleType = (selectedType) => {
     setType(selectedType);
   };
 
   const handleDescription = (text) => {
     setDescription(text);
+    console.log(text);
   };
 
   const imagePickerOptions = {
@@ -87,13 +94,15 @@ const NewRequireScreen = () => {
 
   const uploadImage = async () => {
     const {uri} = image;
+
     const filename = uri.substring(uri.lastIndexOf('/') + 1);
-    const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
 
     setUploading(true);
     setTransferred(0);
 
-    const task = storage().ref(filename).putFile(uploadUri);
+    const data = await RNFS.readFile(uri, 'base64');
+
+    const task = storage().ref(filename).putString(data, 'base64');
 
     // set progress state
     task.on('state_changed', (snapshot) => {
@@ -110,12 +119,34 @@ const NewRequireScreen = () => {
 
     setUploading(false);
 
+    setImage(null);
+
+    const url = await storage().ref(filename).getDownloadURL();
+
+    axios
+      .post(
+        'https://us-central1-fiscaliza-8b2f4.cloudfunctions.net/api/request',
+        {
+          id: Math.floor(Math.random() * 1000 + 1),
+          user: 1,
+          type: type,
+          description: description,
+          image: url,
+        },
+      )
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
     Alert.alert(
-      'Photo uploaded!',
-      'Your photo has been uploaded to Firebase Cloud Storage!',
+      'Solicitação Enviada!',
+      'Sua solicitação foi enviada com sucesso!',
     );
 
-    setImage(null);
+    return url;
   };
 
   return (
@@ -223,13 +254,13 @@ const NewRequireScreen = () => {
               autoCapitalize="none"
               multiline
               maxLength={50}
-              onBlur={(text) => handleDescription(text)}
+              onChangeText={(text) => handleDescription(text)}
             />
           </View>
           <View>
             <Text style={styles.fieldTitle}>Foto do Problema</Text>
             <TouchableOpacity style={styles.button} onPress={selectImage}>
-              <Text style={styles.buttonText}>Pick an image</Text>
+              <Text style={styles.buttonText}>Escolha uma imagem</Text>
             </TouchableOpacity>
             <View style={styles.imageContainer}>
               {image !== null ? (
@@ -240,19 +271,17 @@ const NewRequireScreen = () => {
                   <Progress.Bar progress={transferred} width={300} />
                 </View>
               ) : (
-                <TouchableOpacity style={styles.button} onPress={uploadImage}>
-                  <Text style={styles.buttonText}>Upload image</Text>
-                </TouchableOpacity>
+                <View />
               )}
             </View>
           </View>
-          <View style={styles.checkboxContainer}>
+          {/* <View style={styles.checkboxContainer}>
             <CheckBox />
             <Text style={styles.checkboxLabel}>
               Assumo que não vou enviar imagens pornográficas e/ou textos
               pejorativos.
             </Text>
-          </View>
+          </View> */}
           <TouchableOpacity style={styles.button} onPress={uploadImage}>
             <Text style={styles.buttonText}>Enviar Solicitação</Text>
           </TouchableOpacity>

@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {Caption} from 'react-native-paper';
 import {
@@ -12,15 +12,24 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {useTheme} from '@react-navigation/native';
-import Requires from '../model/requires';
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import api from '../services/api';
 
-const HomeScreen = ({navigation}) => {
-  // const handleToDetails = ({id}) => {};
-  const {colors} = useTheme();
+export default function HomeScreen({navigation}) {
+  const [requests, setRequests] = useState([]);
 
   const theme = useTheme();
+
+  useEffect(() => {
+    async function loadRequires() {
+      const response = await api.get('/request/1');
+
+      setRequests(response.data.data);
+    }
+
+    loadRequires();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -32,19 +41,16 @@ const HomeScreen = ({navigation}) => {
         <Text style={styles.title}>Minhas Solicitações</Text>
         <FlatList
           keyExtractor={(item) => item.id.toString()}
-          data={Requires}
+          data={requests}
           renderItem={({item}) => (
             <TouchableOpacity>
               <View style={styles.item}>
-                <Image
-                  style={styles.listImage}
-                  source={require('../assets/poste.jpg')}
-                />
+                <Image style={styles.listImage} source={{uri: item.image}} />
                 <View style={styles.listText}>
                   <Text style={{fontWeight: 'bold', fontSize: 20}}>
-                    {item.nome}
+                    {item.description}
                   </Text>
-                  <Caption style={{fontSize: 15}}>{item.tipo}</Caption>
+                  <Caption style={{fontSize: 15}}>{item.type}</Caption>
                 </View>
                 <View>
                   <Icon name="chevron-right" size={25} style={styles.icon} />
@@ -61,9 +67,7 @@ const HomeScreen = ({navigation}) => {
       /> */}
     </View>
   );
-};
-
-export default HomeScreen;
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -86,7 +90,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     flexDirection: 'row',
   },
-  icon:{
+  icon: {
     alignSelf: 'flex-end',
   },
   title: {

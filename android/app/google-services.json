@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:386577127206:android:e5dd982973a87b0d89d3e7",
+        "mobilesdk_app_id": "1:386577127206:android:6c67eef8baa8ee7989d3e7",
         "android_client_info": {
-          "package_name": "com.fiscaliza"
+          "package_name": "com.tcc"
         }
       },
       "oauth_client": [
