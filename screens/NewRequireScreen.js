@@ -10,14 +10,15 @@ import {
   Image,
   ScrollView,
   Dimensions,
-  CheckBox,
   Alert,
-  Platform,
+  PermissionsAndroid,
+  Icon,
 } from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Geolocation from 'react-native-geolocation-service';
 
 import LinearGradient from 'react-native-linear-gradient';
 import ImagePicker from 'react-native-image-picker';
@@ -32,8 +33,8 @@ const NewRequireScreen = () => {
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
   const [position, setPosition] = useState({
-    latitude: -22.379274,
-    longitude: -47.547605,
+    latitude: -22.408404,
+    longitude: -47.56052,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
@@ -142,6 +143,9 @@ const NewRequireScreen = () => {
           type: type,
           description: description,
           image: url,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          status: 1,
         },
       )
       .then(function (response) {
@@ -159,6 +163,37 @@ const NewRequireScreen = () => {
     return url;
   };
 
+  const request_location_runtime_permission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Permissão de Localização',
+          message: 'A aplicação precisa da permissão de localização.',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        Geolocation.getCurrentPosition(
+          (pos) => {
+            setPosition({
+              ...position,
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+            });
+          },
+          (error) => {
+            console.log(error);
+            Alert.alert('Houve um erro ao pegar a latitude e longitude.');
+          },
+        );
+      } else {
+        Alert.alert('Permissão de localização não concedida');
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Nova Solicitação</Text>
@@ -169,8 +204,8 @@ const NewRequireScreen = () => {
               <LinearGradient
                 colors={
                   type === 'illumination'
-                    ? ['#0F6EFF', '#4A91FE']
-                    : ['#a6a6a6', '#dbdbdb']
+                    ? ['#4A91FE', '#0F6EFF']
+                    : ['#dbdbdb', '#a6a6a6']
                 }
                 style={styles.requireType}>
                 <MaterialCommunityIcons
@@ -185,8 +220,8 @@ const NewRequireScreen = () => {
               <LinearGradient
                 colors={
                   type === 'water'
-                    ? ['#0F6EFF', '#4A91FE']
-                    : ['#a6a6a6', '#dbdbdb']
+                    ? ['#4A91FE', '#0F6EFF']
+                    : ['#dbdbdb', '#a6a6a6']
                 }
                 style={styles.requireType}>
                 <MaterialCommunityIcons name="water" color="#fff" size={40} />
@@ -197,8 +232,8 @@ const NewRequireScreen = () => {
               <LinearGradient
                 colors={
                   type === 'traffic-light'
-                    ? ['#0F6EFF', '#4A91FE']
-                    : ['#a6a6a6', '#dbdbdb']
+                    ? ['#4A91FE', '#0F6EFF']
+                    : ['#dbdbdb', '#a6a6a6']
                 }
                 style={styles.requireType}>
                 <MaterialCommunityIcons
@@ -215,8 +250,8 @@ const NewRequireScreen = () => {
               <LinearGradient
                 colors={
                   type === 'road'
-                    ? ['#0F6EFF', '#4A91FE']
-                    : ['#a6a6a6', '#dbdbdb']
+                    ? ['#4A91FE', '#0F6EFF']
+                    : ['#dbdbdb', '#a6a6a6']
                 }
                 style={styles.requireType}>
                 <MaterialCommunityIcons name="road" color="#fff" size={40} />
@@ -227,8 +262,8 @@ const NewRequireScreen = () => {
               <LinearGradient
                 colors={
                   type === 'terreno'
-                    ? ['#0F6EFF', '#4A91FE']
-                    : ['#a6a6a6', '#dbdbdb']
+                    ? ['#4A91FE', '#0F6EFF']
+                    : ['#dbdbdb', '#a6a6a6']
                 }
                 style={styles.requireType}>
                 <MaterialIcons name="grass" color="#fff" size={40} />
@@ -239,8 +274,8 @@ const NewRequireScreen = () => {
               <LinearGradient
                 colors={
                   type === 'aedes'
-                    ? ['#0F6EFF', '#4A91FE']
-                    : ['#a6a6a6', '#dbdbdb']
+                    ? ['#4A91FE', '#0F6EFF']
+                    : ['#dbdbdb', '#a6a6a6']
                 }
                 style={styles.requireType}>
                 <MaterialCommunityIcons name="alert" color="#fff" size={40} />
@@ -278,7 +313,7 @@ const NewRequireScreen = () => {
             </View>
           </View>
           <View style={{height: 500}}>
-            <Text style={styles.fieldTitle}>Local do Problema</Text>
+            <Text style={styles.fieldTitle}>Indique no mapa o local do problema</Text>
             <MapView
               style={styles.map}
               region={position}
@@ -295,6 +330,22 @@ const NewRequireScreen = () => {
                 description={'Testando o marcador no mapa'}
               />
             </MapView>
+            <View style={styles.positonBox}>
+              <Text style={styles.positonBoxTitle}>
+                Estou no local do problema
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.locationButton}
+              onPress={() => {
+                request_location_runtime_permission();
+              }}>
+              <MaterialIcons name="my-location" color={'#fff'} size={30} />
+            </TouchableOpacity>
+            {/* <View style={styles.logo}>
+              <Text style={styles.logoText}>Samurai</Text>
+              <Text style={[styles.logoText, {color: '#e74c3c'}]}>Map</Text>
+            </View> */}
           </View>
           {/* <View style={styles.checkboxContainer}>
             <CheckBox />
@@ -430,5 +481,48 @@ const styles = StyleSheet.create({
   imageBox: {
     width: 300,
     height: 300,
+  },
+  logo: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    elevation: 5,
+    marginTop: -730,
+    alignSelf: 'center',
+    marginRight: 10,
+    flexDirection: 'row',
+  },
+  logoText: {
+    fontWeight: 'bold',
+    fontSize: 22,
+  },
+  positonBox: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    opacity: 0.75,
+    marginTop: -110,
+    marginHorizontal: 40,
+    padding: 25,
+    shadowColor: '#000',
+    elevation: 5,
+  },
+  positonBoxTitle: {
+    textAlign: 'center',
+    fontSize: 19,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  positonBoxLatLon: {flexDirection: 'row', justifyContent: 'space-between'},
+  locationButton: {
+    backgroundColor: '#0F6EFF',
+    borderRadius: 150,
+    marginTop: -25,
+    width: 50,
+    height: 50,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    elevation: 8,
   },
 });
