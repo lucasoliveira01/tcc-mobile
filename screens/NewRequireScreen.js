@@ -14,7 +14,11 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import MapView, {Marker} from 'react-native-maps';
+
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import LinearGradient from 'react-native-linear-gradient';
 import ImagePicker from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
@@ -27,6 +31,12 @@ const NewRequireScreen = () => {
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
+  const [position, setPosition] = useState({
+    latitude: -22.379274,
+    longitude: -47.547605,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
 
   const [description, setDescription] = useState();
   const screenHeight = Dimensions.get('window').height;
@@ -221,11 +231,7 @@ const NewRequireScreen = () => {
                     : ['#a6a6a6', '#dbdbdb']
                 }
                 style={styles.requireType}>
-                <MaterialCommunityIcons
-                  name="ice-cream"
-                  color="#fff"
-                  size={40}
-                />
+                <MaterialIcons name="grass" color="#fff" size={40} />
                 <Text style={styles.textSign}>Terreno</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -237,12 +243,8 @@ const NewRequireScreen = () => {
                     : ['#a6a6a6', '#dbdbdb']
                 }
                 style={styles.requireType}>
-                <MaterialCommunityIcons
-                  name="ice-cream"
-                  color="#fff"
-                  size={40}
-                />
-                <Text style={styles.textSign}>Dengue</Text>
+                <MaterialCommunityIcons name="alert" color="#fff" size={40} />
+                <Text style={styles.textDengue}>Foco de Dengue</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -275,6 +277,25 @@ const NewRequireScreen = () => {
               )}
             </View>
           </View>
+          <View style={{height: 500}}>
+            <Text style={styles.fieldTitle}>Local do Problema</Text>
+            <MapView
+              style={styles.map}
+              region={position}
+              onPress={(e) =>
+                setPosition({
+                  ...position,
+                  latitude: e.nativeEvent.coordinate.latitude,
+                  longitude: e.nativeEvent.coordinate.longitude,
+                })
+              }>
+              <Marker
+                coordinate={position}
+                title={'Marcador'}
+                description={'Testando o marcador no mapa'}
+              />
+            </MapView>
+          </View>
           {/* <View style={styles.checkboxContainer}>
             <CheckBox />
             <Text style={styles.checkboxLabel}>
@@ -282,9 +303,11 @@ const NewRequireScreen = () => {
               pejorativos.
             </Text>
           </View> */}
-          <TouchableOpacity style={styles.button} onPress={uploadImage}>
-            <Text style={styles.buttonText}>Enviar Solicitação</Text>
-          </TouchableOpacity>
+          <View style={{marginTop: 50}}>
+            <TouchableOpacity style={styles.button} onPress={uploadImage}>
+              <Text style={styles.buttonText}>Enviar Solicitação</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -298,12 +321,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fcfcfc',
+    height: height,
   },
   main: {
     flex: 1,
     width: '93%',
     alignSelf: 'center',
-    height: height + 250,
+  },
+  map: {
+    marginTop: 20,
+    height: '100%',
+    width: '100%',
   },
   title: {
     fontSize: 25,
@@ -339,6 +367,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  textDengue: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'center',
   },
   textInput: {
     borderBottomWidth: 1,

@@ -43,16 +43,6 @@ const MainTabScreen = () => (
         ),
       }}
     />
-    <Tab.Screen
-      name="Explore"
-      component={ExploreScreen}
-      options={{
-        tabBarLabel: 'Configurações',
-        tabBarIcon: ({color}) => (
-          <Icon name="ios-settings" color={color} size={26} />
-        ),
-      }}
-    />
   </Tab.Navigator>
 );
 

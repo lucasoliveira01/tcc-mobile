@@ -31,6 +31,51 @@ export default function HomeScreen({navigation}) {
     loadRequires();
   }, []);
 
+  function handleType(type) {
+    switch (type) {
+      case 'traffic-light':
+        return 'Semáforo';
+      case 'illumination':
+        return 'Iluminação';
+      case 'water':
+        return 'Água';
+      case 'road':
+        return 'Asfalto';
+      case 'terreno':
+        return 'Terreno';
+      case 'aedes':
+        return 'Foco de Dengue';
+      default:
+        return '';
+    }
+  }
+
+  function handleStatus(type) {
+    switch (type) {
+      case 1:
+        return 'Em Aberto';
+      case 2:
+        return 'Em Andamento';
+      case 3:
+        return 'Concluído';
+      default:
+        return '';
+    }
+  }
+
+  function handleStatusColor(type) {
+    switch (type) {
+      case 1:
+        return '#FDD017';
+      case 2:
+        return '#0000FF';
+      case 3:
+        return '#4CBB17';
+      default:
+        return '';
+    }
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -50,7 +95,16 @@ export default function HomeScreen({navigation}) {
                   <Text style={{fontWeight: 'bold', fontSize: 20}}>
                     {item.description}
                   </Text>
-                  <Caption style={{fontSize: 15}}>{item.type}</Caption>
+                  <Caption style={{fontSize: 15}}>
+                    <Text>{handleType(item.type)}</Text> -{' '}
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        color: handleStatusColor(item.status),
+                      }}>
+                      {handleStatus(item.status)}
+                    </Text>
+                  </Caption>
                 </View>
                 <View>
                   <Icon name="chevron-right" size={25} style={styles.icon} />
@@ -83,7 +137,7 @@ const styles = StyleSheet.create({
   item: {
     padding: 10,
     fontSize: 18,
-    height: 80,
+    height: 90,
     width: '100%',
     borderBottomWidth: 1,
     borderBottomColor: '#d9d9d9',
